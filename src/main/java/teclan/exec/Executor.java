@@ -3,6 +3,7 @@ package teclan.exec;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Joiner;
 
@@ -29,7 +30,42 @@ public class Executor {
 				ps = rt.exec(cmd);
 			} else {
 				String option = Joiner.on(" ").join(parms);
+				System.out.println(String.format("执行命令: %s %s",cmd,option));
 				ps = rt.exec(cmd + " " + option);
+			}
+
+			InputStream is = ps.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+			String line;
+
+			while ((line = reader.readLine()) != null) {
+				result.append(line);
+			}
+			ps.waitFor();
+			is.close();
+			reader.close();
+			ps.destroy();
+		} catch (Exception e) {
+			throw e;
+		}
+		return result.toString();
+	}
+
+	public static String exec(String cmd, String[] parms,int waitFor) throws Exception {
+
+		StringBuilder result = new StringBuilder();
+
+		try {
+			Runtime rt = Runtime.getRuntime();
+			Process ps = null;
+
+			if (parms == null || parms.length < 1) {
+				ps = rt.exec(cmd);
+			} else {
+				String option = Joiner.on(" ").join(parms);
+				System.out.println(String.format("执行命令: %s %s",cmd,option));
+				ps = rt.exec(cmd + " " + option);
+				ps.waitFor(waitFor, TimeUnit.SECONDS);
 			}
 
 			InputStream is = ps.getInputStream();
