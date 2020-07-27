@@ -51,21 +51,18 @@ public class Executor {
 		return result.toString();
 	}
 
-	public static String exec(String cmd, String[] parms,int waitFor) throws Exception {
+	public static Runtime exec(Runtime rt, String cmd, String[] parms) throws Exception {
 
 		StringBuilder result = new StringBuilder();
 
 		try {
-			Runtime rt = Runtime.getRuntime();
 			Process ps = null;
-
 			if (parms == null || parms.length < 1) {
 				ps = rt.exec(cmd);
 			} else {
 				String option = Joiner.on(" ").join(parms);
 				System.out.println(String.format("执行命令: %s %s",cmd,option));
 				ps = rt.exec(cmd + " " + option);
-				ps.waitFor(waitFor, TimeUnit.SECONDS);
 			}
 
 			InputStream is = ps.getInputStream();
@@ -75,6 +72,7 @@ public class Executor {
 			while ((line = reader.readLine()) != null) {
 				result.append(line);
 			}
+
 			ps.waitFor();
 			is.close();
 			reader.close();
@@ -82,7 +80,7 @@ public class Executor {
 		} catch (Exception e) {
 			throw e;
 		}
-		return result.toString();
+		return rt;
 	}
 
 	private static String[] toStringArray(Object[] parms) {
